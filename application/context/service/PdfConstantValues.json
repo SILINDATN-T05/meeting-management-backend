@@ -1,0 +1,108 @@
+{
+"pdf":[{
+      "search":"Claim Number:",
+      "value":"",
+      "name":"ClaimNumber",
+      "cutAt":"Full Report"
+    },
+    {
+      "search":"Assessment Number:",
+      "value":"",
+    "name":"AssessmentNumber",
+    "cutAt":"User Status"
+    },
+   {
+      "search":"Manufacturer:",
+      "value":"",
+      "name":"Manufacturer",
+      "cutAt":"Model / Sub Model:"
+    },
+    {
+      "search":"Model / Sub Model:",
+      "value":"",
+      "name":"Model",
+      "cutAt":"Model Sheet Number:"
+    },
+    {
+      "search":"Model Sheet Number:",
+      "value":"",
+      "name":"ModelNumber",
+      "cutAt":"En g ine Number"
+    },
+    {
+      "search":"En g ine Number:",
+      "value":"",
+      "name":"EngineNumber",
+      "cutAt":"Re g istration Number"
+    },
+    {
+      "search":"Re g istration Number:",
+      "value":"",
+      "name":"RegistrationNumber",
+      "cutAt":"V IN Number"
+    },
+    {
+      "search":"V IN Number:",
+      "value":"",
+      "name":"VinNumber",
+      "cutAt":"Re g istration Month"
+    },
+    {
+      "search":"Re g istration Year:",
+      "value":"",
+      "name":"RegistrationYear",
+      "cutAt":"Odometer"
+    },
+    {
+      "search":"Under  W arrant y :",
+      "value":"",
+      "name":"UnderWarranty",
+      "cutAt":"W arrant y  E xp ir y :"
+    },
+    {
+      "search":"Version:",
+      "value":"",
+      "name":"Originator",
+      "cutAt":"Printed:"
+    },
+    {
+      "search":"",
+      "value":"",
+      "name":"insurer_rep",
+      "cutAt":""
+    },
+    {
+      "search":"Re p air Start Date:",
+      "value":"",
+      "name":"repairdate",
+      "cutAt":"Polic y  Number:"
+    },
+
+    {
+      "search":"Repairer",
+      "value":[
+        {
+          "search":"Name :",
+          "value":"",
+          "name":"Name",
+          "cutAt":"Address :"
+        },{
+          "search":"Mobile Tel :",
+          "value":"",
+          "name":"MobileTel",
+          "cutAt":"Fa x  Tel :",
+          "alcutAt":"Email Address :"
+        },{
+          "search":"Business Tel :",
+          "value":"",
+          "name":"BusinessTel",
+          "cutAt":"Mobile Tel :",
+          "alcutAt":"Email Address :"
+        }
+      ],
+      "name":"Repairer",
+      "cutAt":"Vehicle"
+    }
+
+  ]
+}

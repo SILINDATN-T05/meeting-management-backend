@@ -1,0 +1,47 @@
+var http                        =   require('http');
+var fs                          =   require('fs');
+var https                       =   require('https');
+var util                        =   require('util');
+var log4js                      =   require('log4js');
+var config                      =   require('../engine/Config');
+var serverContext               =   require('../serverContext');
+var logger                      =   log4js.getLogger('SERVER_CORE');
+
+
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+serverContext.set('port', config.server.port);
+var server;
+if (config.server.secure) {
+    var options = {
+        key: fs.readFileSync(config.server.key),
+        cert: fs.readFileSync(config.server.certificate),
+        ca: fs.readFileSync(config.server.ca),
+        requestCert: config.server.requestCertificate,
+        rejectUnauthorized: config.server.rejectUnauthorized}
+
+    server = https.createServer(options,serverContext);
+}
+else {
+    server = http.createServer(serverContext);
+}
+server.on("connection", function (socket) {
+    socket.setNoDelay(true);
+});
+server.listen(config.server.port, '0.0.0.0');
+server.on('error', function(err){
+    logger.fatal(util.format('ERROR STARTING SERVER CORE [%s], SERVER SHUTTING DOWN', err));
+    process.exit();
+});
+server.on('listening', function(){
+    var self =      this;
+    var addr =      server.address();
+    var bind =      typeof addr === 'string'
+        ? 'pipe ' + addr
+        : 'port ' + addr.port;
+    logger.debug('SERVER Server has been started on:'+ new Date());
+    logger.debug('Listening on:'+bind);
+    serverContext.emit('started');
+});
+process.on('SIGINT', function() {
+    logger.fatal('SERVER SHUTTING DOWN : ', new Date());
+});

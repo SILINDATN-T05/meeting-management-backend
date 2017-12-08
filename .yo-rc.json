@@ -1,0 +1,9 @@
+{
+  "generator-rest": {
+    "srcDir": "Application",
+    "apiDir": "routes",
+    "authMethods": [
+      "password"
+    ]
+  }
+}

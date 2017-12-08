@@ -1,0 +1,57 @@
+{
+    "local": {
+      "url_token":"http://localhost:9195/api/Token/",
+      "url":"http://localhost:9195/api/server/core/transaction/",
+      "database": {
+        "connectionString": "mongodb://localhost:27017/MEETING-MANAGEMENT",
+        "certLocation": "c:\\Users\\ThulaniS\\WebstormProjects\\meeting-management-backend\\config\\ssl\\mongodb-db1-cert.crt",
+        "user": "root",
+        "password": "serverdbpassword",
+        "authdb": "admin",
+        "isSecure": "false"
+      },
+      "server": {
+        "port": "9195",
+        "service_init_port": "1040",
+        "baseContext": "/api",
+        "version": "0.0.0.5"
+      },
+      "proxy": {
+        "port": "9195",
+        "baseContext": "/api",
+        "[ca]": "/opt/node/SERVER/config/ssl/test.txtß",
+        "schema": "http",
+        "headers": {
+          "x-access-token": "x-access-token"
+        }
+      },
+      "socket": {
+        "port": "9666"
+      },
+      "webapi":{
+        "channel":"WEB-API",
+        "organizationID":"MEETINGS",
+        "application":"MEETING",
+        "username":"27798308985",
+        "password":"12345678"
+      },
+      "logger": {
+        "appenders": [
+          {
+            "type": "console"
+          },
+          {
+            "type": "file",
+            "filename": "./logs/server.log"
+          },
+          {
+            "type": "dateFile",
+            "absolute": false,
+            "filename": "../logs/tran.log",
+            "pattern": "-yyyy-MM-dd",
+            "alwaysIncludePattern": false
+          }
+        ]
+      }
+    }
+  }
