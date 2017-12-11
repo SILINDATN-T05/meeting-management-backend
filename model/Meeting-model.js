@@ -4,21 +4,25 @@ var base = require('./plugins/BaseModel');
 var auditor = require('./plugins/TrailsLogger');
 var UserStates = require('./types/UserState');
 
-const MeetingItemsSchema = new Schema({
-    meetin_type: { type: Schema.Types.ObjectId, ref: 'meetingtype' },
-    meetin_item: { type: String, required:true },
-    comments: { type: String },
-    status: { type: String },
-    actionby: { type: String }
-  }, {
-    timestamps: true,
-    toJSON: {
-      virtuals: true,
-      transform: (obj, ret) => { delete ret._id }
-    }
-  })
+var mongoose =  require('mongoose');
+var Schema = mongoose.Schema;
 
-MeetingItemsSchema.plugin(auditor);
-MeetingItemsSchema.plugin(base);
+const MeetingSchema = new Schema({
+  meeting_type: { type: Schema.Types.ObjectId, ref: 'meetingtype' },
+  meeting_name: { type: String },
+  meeting_items: [{ type: Schema.Types.ObjectId, ref: 'meetingitem' }],
+  meeting_date: { type: Date, default:new Date() },
+  status:             { type: String,  enum:['ACTIVE','SUSPENDED','CANCELLED','INACTIVE'], default: 'ACTIVE'},
+}, {
+  timestamps: true,
+  toJSON: {
+    virtuals: true,
+    transform: (obj, ret) => { delete ret._id }
+  }
+})
 
-module.exports = mongoose.model('meetingitem', MeetingItemsSchema);
+
+MeetingSchema.plugin(auditor);
+MeetingSchema.plugin(base);
+
+module.exports = mongoose.model('meeting', MeetingSchema);

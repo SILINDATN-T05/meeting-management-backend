@@ -38,7 +38,7 @@ router.post('/list', bodyParser, function(req, res) {
     var session =   data.session;
     Org.findOne({organisationName: session.organizationID}, function(err, org){
         if(!err && org){
-            Meeting.find({}).populate('meetingitem').exec(function(err, meetings){
+            Meeting.find({}).populate('meetin_type','name').populate('meeting_items').exec(function(err, meetings){
                 res.send({code:'00', message: 'success', data: meetings});
             });
         }else{
@@ -61,7 +61,7 @@ router.post('/search', bodyParser, function(req, res) {
     }
     Org.findOne({organisationName: session.organizationID}, function(err, org){
         if(!err && org){
-            Meeting.find(data.search).populate('meetingitem').exec(function(err, meetings){
+            Meeting.find(data.search).populate('meetin_type', 'name').populate('meeting_items').exec(function(err, meetings){
                 res.send({code:'00', message: 'success', data: meetings});
             });
         }else{
