@@ -4,7 +4,7 @@
   "main": "application",
   "private": true,
   "scripts": {
-    "start": "pm2 start ./bin/SERVER",
+    "start": "pm2 start ./bin/SERVER;pm2 logs",
     "test": "jest",
     "test:unit": "npm test \"Application/**/!(index).test.js\"",
     "test:integration": "npm test \"Application/**/index.test.js\"",
