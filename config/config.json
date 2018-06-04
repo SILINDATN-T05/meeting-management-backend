@@ -1,7 +1,7 @@
 {
     "local": {
-      "url_token":"http://localhost:9195/api/Token/",
-      "url":"http://localhost:9195/api/server/core/transaction/",
+      "url_token":"http://localhost:8080/api/Token/",
+      "url":"http://localhost:8080/api/server/core/transaction/",
       "database": {
         "connectionString": "mongodb://silindatn:Happinessis#me15@ds147390.mlab.com:47390/meeting-management",
         "certLocation": "./meeting-management-backend/config/ssl/mongodb-db1-cert.crt",
@@ -11,13 +11,13 @@
         "isSecure": "false"
       },
       "server": {
-        "port": "9195",
+        "port": "8080",
         "service_init_port": "1040",
         "baseContext": "/api",
         "version": "0.0.0.5"
       },
       "proxy": {
-        "port": "9195",
+        "port": "8080",
         "baseContext": "/api",
         "[ca]": "/opt/node/SERVER/config/ssl/test.txtß",
         "schema": "http",
