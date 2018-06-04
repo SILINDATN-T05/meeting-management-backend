@@ -95,7 +95,6 @@
     "kareem": "*",
     "lodash": "^4.13.1",
     "log4js": "^2.8.0",
-    "mcrypt": "^0.1.13",
     "merge-util": "*",
     "moment": "*",
     "mongo-message-queue": "^0.1.2",
