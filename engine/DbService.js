@@ -25,13 +25,13 @@ DB.prototype.isSecure = function (config) {
     }
 }
 
-DB.prototype.certLocation = function (config) {
-    if (config && config.certLocation) {
-        return config.certLocation;
-    } else {
-        return (null);
-    }
-}
+// DB.prototype.certLocation = function (config) {
+//     if (config && config.certLocation) {
+//         return config.certLocation;
+//     } else {
+//         return (null);
+//     }
+// }
 
 DB.prototype.getOptions = function (config) {
     if (config && config.options) {
