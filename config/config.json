@@ -4,7 +4,7 @@
       "url":"http://localhost:9195/api/server/core/transaction/",
       "database": {
         "connectionString": "mongodb://localhost:27017/MEETING-MANAGEMENT",
-        "certLocation": "c:\\Users\\ThulaniS\\WebstormProjects\\meeting-management-backend\\config\\ssl\\mongodb-db1-cert.crt",
+        "certLocation": "./meeting-management-backend/config/ssl/mongodb-db1-cert.crt",
         "user": "root",
         "password": "serverdbpassword",
         "authdb": "admin",
