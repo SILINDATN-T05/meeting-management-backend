@@ -1,5 +1,4 @@
-var Model = require('mongoose').Model
-, ms = require('ms')
+let ms = require('ms');
 
 /**
 * Exports.
@@ -20,7 +19,7 @@ module.exports = exports = ttl;
 *
 * Example:
 *
-*    var schema = new Schema({..});
+*    let schema = new Schema({..});
 *    schema.plugin(ttl, { ttl: 5000 });
 *
 *  The ttl option supports the ms module by @guille meaning
@@ -40,9 +39,9 @@ module.exports = exports = ttl;
 * Useful when working in multi-core environments when we only want one
 * process executing it.
 *
-*    var schema = new Schema({..});
+*    let schema = new Schema({..});
 *    schema.plugin(ttl, { ttl: 5000, reap: false });
-*    var Cache = db.model('Cache', schema);
+*    let Cache = db.model('Cache', schema);
 *    if (isMyWorker) Cache.startTTLReaper();
 *
 *  The reaper can also be stopped.
@@ -52,7 +51,7 @@ module.exports = exports = ttl;
 *  Time-to-live is specified at the collection level, however
 *  it can also be overridden for a given document.
 *
-*    var cache = new Cache;
+*    let cache = new Cache;
 *    cache.ttl = '2m' // lives for two minutes
 *    cache.save();
 *
@@ -66,31 +65,29 @@ module.exports = exports = ttl;
 */
 
 function ttl (schema, options) {
-options || (options = {});
+    options || (options = {});
 
-var key = '__ttl'
-    , overridden = '__ttlOverride'
-    , ttl = options.ttl || 60000
-    , interval = options.interval || 60000*5
-    , reap = false !== options.reap
-    , onReap = 'function' == typeof options.onReap
-        ? options.onReap
-        : undefined
+    let key = '__ttl'
+        , overridden = '__ttlOverride'
+        , ttl = options.ttl || 60000
+        , interval = options.interval || 60000 * 5
+        , reap = false !== options.reap;
+        // , onReap = 'function' === typeof options.onReap ? options.onReap : undefined;
 
-var o = {};
-o[key] = Date;
-schema.add(o);
+    let o = {};
+    o[key] = Date;
+    schema.add(o);
 
-schema.index(key, { background: true });
+    schema.index(key, { background: true });
 
-schema.pre('save', function (next) {
-    if (overridden in this) {
+    schema.pre('save', function (next) {
+        if (overridden in this) {
         // nothing to do
-    } else {
-        this[key] = fromNow();
-    }
-    next();
-});
+        } else {
+            this[key] = fromNow();
+        }
+        next();
+    });
 
 /**
  * startTTLReaper
@@ -98,18 +95,17 @@ schema.pre('save', function (next) {
  * Starts reaping expired docs from the db.
  */
 
-schema.statics.startTTLReaper = function startTTLReaper () {
-    if (key in this) return;
+    schema.statics.startTTLReaper = function startTTLReaper () {
+        if (key in this) {
+            return;
+        }
 
-    var self = this;
-    self[key] = setInterval((function remove () {
-        self.processExpiredSessions();
-            /*.remove()
-            .where(key).lte(new Date)
-            .exec(onReap);*/
-        return remove;
-    })(), interval);
-}
+        let self = this;
+        self[key] = setInterval((function remove () {
+            self.processExpiredSessions();
+            return remove;
+        })(), interval);
+    };
 
 /**
  * stopTTLReaper
@@ -117,16 +113,16 @@ schema.statics.startTTLReaper = function startTTLReaper () {
  * Stops removing expired docs from the db.
  */
 
-schema.statics.stopTTLReaper = function stopTTLReapter () {
-    clearInterval(this[key]);
-    delete this[key];
-};
+    schema.statics.stopTTLReaper = function stopTTLReapter () {
+        clearInterval(this[key]);
+        delete this[key];
+    };
 
 /**
  * Listen to Model.init.
  */
 
-schema.on('init', init);
+    schema.on('init', init);
 
 /**
  * init
@@ -137,63 +133,69 @@ schema.on('init', init);
  * @private
  */
 
-function init (model) {
-    if (model.__ttl) return;
+    function init (model) {
+        if (model.__ttl) {
+            return;
+        }
 
-    var distinct_ = model.distinct;
-    model.distinct = function distinct (field, cond, cb) {
-        applyTTL(cond);
-        return distinct_.call(model, field, cond, cb);
-    }
+        let distinct_ = model.distinct;
+        model.distinct = function distinct (field, cond, cb) {
+            applyTTL(cond);
+            return distinct_.call(model, field, cond, cb);
+        };
 
-    'findOne find count'.split(' ').forEach(function (method) {
-        var fn = model[method];
+        'findOne find count'.split(' ').forEach(function (method) {
+            let fn = model[method];
 
-        model[method] = function (cond, fields, opts, cb) {
-            if (!cond) {
-                cond = {};
-            } else if ('function' == typeof cond) {
-                cb = cond;
-                cond = {};
+            model[method] = function (cond, fields, opts, cb) {
+                if (!cond) {
+                    cond = {};
+                } else if ('function' === typeof cond) {
+                    cb = cond;
+                    cond = {};
+                }
+
+                applyTTL(cond);
+                return fn.call(model, cond, fields, opts, cb);
             }
+        });
 
-            applyTTL(cond);
-            return fn.call(model, cond, fields, opts, cb);
-        }
-    });
-
-    'where $where'.split(' ').forEach(function (method) {
-        var fn = model[method];
-        model[method] = function () {
-            var query = fn.apply(this, arguments)
+        'where $where'.split(' ').forEach(function (method) {
+            let fn = model[method];
+            model[method] = function () {
+                let query = fn.apply(this, arguments)
                 , cond = {};
-            applyTTL(cond);
-            return query.find(cond);
-        }
-    });
+                applyTTL(cond);
+                return query.find(cond);
+            }
+        });
 
-    if (reap) {
-        model.startTTLReaper();
+        if (reap) {
+            model.startTTLReaper();
+        }
     }
-}
 
 /**
  * Getters/setters
  */
 
-var virt = schema.virtual('ttl');
+    let virt = schema.virtual('ttl');
 
-virt.get(function () {
-    if (this[key]) return this[key];
-    this.ttl = ttl;
-    return this.ttl;
-});
+    virt.get(function () {
+        if (this[key]) {
+            return this[key];
+        }
+        this.ttl = ttl;
+        return this.ttl;
+    });
 
-virt.set(function (val) {
-    if ('reset' == val) return this.resetTTL();
-    this[overridden] = arguments.length ? val : ttl;
-    return this[key] = fromNow(this[overridden]);
-});
+    virt.set(function (val) {
+        if ('reset' === val) {
+            return this.resetTTL();
+        }
+        this[overridden] = arguments.length ? val : ttl;
+        return this[key] = fromNow(this[overridden]);
+    });
 
 /**
  * resetTTL
@@ -202,37 +204,37 @@ virt.set(function (val) {
  * in the plugin options or plugin default.
  */
 
-schema.methods.resetTTL = function resetTTL () {
-    delete this._doc[key];
-    delete this[overridden];
-}
+    schema.methods.resetTTL = function resetTTL () {
+        delete this._doc[key];
+        delete this[overridden];
+    };
 
 /**
  * fromNow
  * @private
  */
 
-function fromNow (val) {
-    var v = arguments.length ? val : ttl;
-    return new Date(Date.now() + ms(v));
-}
+    function fromNow (val) {
+        let v = arguments.length ? val : ttl;
+        return new Date(Date.now() + ms(v));
+    }
 
 /**
  * Applies ttl to query conditions.
  * @private
  */
-function applyTTL (cond) {
-    if (cond[key]) {
-        cond.$and || (cond.$and = []);
-        var a = {};
-        a[key] = cond[key];
-        cond.$and.push(a);
-        var b = {};
-        b[key] = { $gt: new Date };
-        cond.$and.push(b);
-        delete cond[key];
-    } else {
-        cond[key] = { $gt: new Date };
+    function applyTTL (cond) {
+        if (cond[key]) {
+            cond.$and || (cond.$and = []);
+            let a = {};
+            a[key] = cond[key];
+            cond.$and.push(a);
+            let b = {};
+            b[key] = { $gt: new Date };
+            cond.$and.push(b);
+            delete cond[key];
+        } else {
+            cond[key] = { $gt: new Date };
+        }
     }
-}
 }

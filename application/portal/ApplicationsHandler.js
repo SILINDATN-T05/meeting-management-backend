@@ -1,114 +1,135 @@
+let express = require('express');
+let router = express.Router();
+let handler = express();
+let bodyParser = require('body-parser').json();
+let Application = require('../../model/Application-model');
+let Org = require('../../model/Organisation-model');
+let log4js = require('log4js');
+let logger = log4js.getLogger('APPLICATIONHANDLER');
+// let _ = require('lodash');
+logger.level = 'debug';
 
-var express         =   require('express');
-var router          =   express.Router();
-var handler         =   express();
-var logger          =   require('util');
-var bodyParser      =   require('body-parser').json();
-var Application     =   require('../../model/Application-model');
-var Org             =   require('../../model/Organisation-model');
-var Role            =   require('../../model/Role-model');
-var option          =   {channel:{$ne:'PORTAL'}};
-var org_router      =   require('../../application/context/comms/Router');
-
-var validateApplication =   function(payload, callback){
-    if(!payload.name){
+let validateApplication = function (payload, callback) {
+    if (!payload.applications.name) {
         return callback('#application.create.name.required');
     }
-    if(!payload.code){
+    if (!payload.applications.code) {
         return callback('#application.create.code.required');
     }
-    if(!payload.channel_name){
+    if (!payload.applications.channel_name) {
         return callback('#application.create.channel.required');
     }
-    Application.findOne({code:payload.code}, function(err, app){
-        if(!err && app){
+    Application.findOne({code: payload.applications.code}, function (err, app) {
+        if (!err && app) {
             return callback('#application.create.code.used');
-        }else{
-            Org.findOne({_id: payload.organisation}, function(err, org){
-                if(!err && org){
+        } else {
+            Org.findOne({_id: payload.applications.organisationID}, function (err, org) {
+                if (!err && org) {
                     return callback(null, org);
-                }else{
+                } else {
                     return callback('#application.create.organisation.required');
                 }
             });
         }
     });
 };
-router.post('/create', bodyParser, function(req, res) {
-    var payload     =   req.body;
-    var user        =   payload.user;
-    validateApplication(payload, function(err, org){
-        if(err) {
-            res.send({code:'06', message:err});
+router.post('/create', bodyParser, function (req, res) {
+    let payload = req.body;
+    let user = payload.user;
+    validateApplication(payload, function (err, org) {
+        if (err) {
+            res.send({code: '06', message: err});
             return;
         }
-        var application             = new Application();
-        application.name            =   payload.name;
-        application.code            =   payload.code;
-        application.description     =   payload.description;
-        application.channel         =   payload.channel_name;
-        application.organizationID  =   org.organisationName;
-        var permissions             =   payload.permissions||[];
-        console.error('___CREATE_APPLICAT', JSON.stringify(payload));
-        for(i=0; i<permissions.length; i++){
+        let application = new Application();
+        application.name = payload.applications.name;
+        application.code = payload.applications.code;
+        application.description = payload.applications.description;
+        application.channel = payload.applications.channel_name;
+        application.organizationID = org.organisationName;
+        let permissions = payload.applications.permissions || [];
+        for (i = 0; i < permissions.length; i++) {
             application.permissions.push(permissions[i]);
         }
-        var trans_code             =   payload.trans_code||[];
-        for(i=0; i<trans_code.length; i++){
-            var trans   =   trans_code[i];
-            application.trans_code.push({code:trans.code, name:trans.name});
+        let trans_code = payload.applications.trans_code || [];
+        for (i = 0; i < trans_code.length; i++) {
+            let trans = trans_code[i];
+            application.trans_code.push({code: trans.code, name: trans.name});
         }
-        application.persist(user, function(err, app){
-            if(!err && app){
-                res.send({code:'00', message:'success', data:app});
-            }else{
-                res.send({code:'06', message:'#application.create.error'});
+        application.persist(user, function (err, app) {
+            if (!err && app) {
+                res.send({code: '00', message: 'success', data: app});
+            } else {
+                res.send({code: '06', message: '#application.create.error'});
             }
         });
     });
 });
-router.post('/list_all', bodyParser, function(req, res) {
-    Application.find(option, function(err, apps){
-        res.send({code:'00', message:'success', data:apps});
-    });
-});
-router.post('/list_org', bodyParser, function(req, res) {
-    var payload =   req.body;
-    var org     =   payload.organizationID;
-    Application.find({organizationID: org, channel:{$ne:'PORTAL'}}, function(err, apps){
-        if(!err){
-            res.send({code:'00', message:'success', data:apps});
-        }else{
-            res.send({code:'06', message:err});
+router.post('/list_all', bodyParser, function (req, res) {
+    const query = req.body.query || {};
+    Application.find(query, function (err, apps) {
+        if (err) {
+            res.send({code: '06', message: 'application.ntf'});
+        } else {
+            res.send({code: '00', message: 'success', data: apps});
         }
     });
 });
-router.post('/update_permissions', bodyParser, function(req, res) {
-    var data        =   req.body;
-    var user        =   data.user;
-    var org         =   data.organizationID;//app organisation
-    var app         =   data.application;   //app _id
-    var permissions =   data.permissions;   //permissions array, IDs
+router.post('/list_org', bodyParser, function (req, res) {
+    let payload = req.body;
+    let org = payload.organizationID;
+    Application.find({organizationID: org, channel: {$ne: 'PORTAL'}}, function (err, apps) {
+        if (!err) {
+            res.send({code: '00', message: 'success', data: apps});
+        } else {
+            res.send({code: '06', message: err});
+        }
+    });
+});
+router.post('/update_permissions', bodyParser, function (req, res) {
+    let data = req.body;
+    let user = data.user;
+    let org = data.organizationID;// app organisation
+    let app = data.application;   // app _id
+    let permissions = data.permissions;   // permissions array, IDs
 
-    Application.findOne({_id:app, organizationID: org}, function(err, application){
-        if(application){
-            application.permissions =   permissions;
-            application.persist(user, function(err){
-                if(err){
-                    res.send({code:'06', message:err.message});
-                }else{
-                    res.send({code:'00', message:'success'});
+    Application.findOne({_id: app, organizationID: org}, function (err, application) {
+        if (application) {
+            application.permissions = permissions;
+            application.persist(user, function (err) {
+                if (err) {
+                    res.send({code: '06', message: err.message});
+                } else {
+                    res.send({code: '00', message: 'success'});
                 }
             });
-        }else{
-            res.send({code:'06', message:'#application.update.invalid'});
+        } else {
+            res.send({code: '06', message: '#application.update.invalid'});
         }
     });
 });
-router.post('/application_trans', bodyParser, function(req, res) {
-    var data        =   req.body;
-    var payload     =   {organizationID:data.organisation, path:'core/transType/map'};
-    org_router.route(payload, req, res, undefined, data.organisation);
+router.post('/edit', function (req, res) {
+    const data = req.body;
+    const user = data.user;
+    const org = data.applications.organizationID;
+    const application = data.applications._id;
+    Application.findOne({_id: application, organizationID: org}, function (err, doc) {
+        if (!err && doc) {
+            doc.name = data.applications.name;
+            doc.description = data.applications.description;
+            doc.permissions = data.applications.permissions
+            doc.persist(user, function (err, result) {
+                if (err) {
+                    logger.fatal(err);
+                    res.send({code: '06', message: '#application.update.failed'});
+                } else {
+                    res.send({code: '00', message: 'success', data: result});
+                }
+            });
+        } else {
+            res.send({code: '06', message: '#application.update.invalid'});
+        }
+    });
 });
 handler.use('/application', router);
 module.exports = handler;

@@ -1,7 +1,7 @@
 var S           =   require('string');
 var format      =   require('date-format');
 var uuid        =   require('uuid');
-var MCrypt      =   require('mcrypt').MCrypt;
+// var MCrypt      =   require('mcrypt').MCrypt;
 var self        =   null;
 
 function  ExpressionsUtil() {
@@ -89,7 +89,7 @@ ExpressionsUtil.prototype.rijndael_decrypt  =   function () {
     var args        =   self.getArgs();
     var key         =   args.shift();
     var data        =   args.shift();
-    var rijndael    =   new MCrypt('rijndael-256', 'cbc');
+    // var rijndael    =   new MCrypt('rijndael-256', 'cbc');
     rijndael.validateIvSize(false);
     rijndael.open(key, key);
     return(rijndael.decrypt(data));
@@ -98,7 +98,7 @@ ExpressionsUtil.prototype.rijndael_encrypt  =   function () {
     var args        =   self.getArgs();
     var key         =   args.shift();
     var data        =   args.shift();
-    var rijndael    =   new MCrypt('rijndael-256', 'cbc');
+    // var rijndael    =   new MCrypt('rijndael-256', 'cbc');
     rijndael.validateIvSize(false);
     rijndael.open(key, key);
     return(rijndael.encrypt(data));

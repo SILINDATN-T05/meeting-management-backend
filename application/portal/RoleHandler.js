@@ -1,168 +1,118 @@
-
-var express         =   require('express');
-var router          =   express.Router();
-var handler         =   express();
-var Permission      =   require('../../model/Permission-model');
-var Role            =   require('../../model/Role-model');
-var Org             =   require('../../model/Organisation-model');
-var User            =   require('../../model/User-model');
-var async           =   require('async');
-
-router.post('/create', function(req, res) {
-    var data        =   req.body;
-    var user        =   data.user;
-    var org         =   data.role.organizationID;
-    Org.findOne({organisationName: org}, function(err, org){
-        if(err || !org){
-            res.send({code:'06', message: '#role.create.org.invalid'});
-            return;
+const express = require('express')
+const router = express.Router()
+const handler = express()
+const Role = require('../../model/Role-model')
+const Org = require('../../model/Organisation-model')
+let log4js = require('log4js')
+let logger = log4js.getLogger('ROLE-HANDLER')
+logger.level = 'debug'
+router.post('/create', function (req, res) {
+  const data = req.body
+  const user = data.user
+  let org = data.role.organizationID
+  Org.findOne({organisationName: org}, function (err, org) {
+    if (err || !org) {
+      res.send({code: '06', message: '#role.create.org.invalid'})
+      return
+    }
+        // -------------------------------------------//
+    Role.findOne({name: data.role.name, override: 'YES'}, function (err, role_exist) {
+      if (!err && role_exist) {
+        res.send({code: '06', message: '#role.create.name.exist'})
+        return
+      }
+      let role = new Role()
+      role.name = data.role.name
+      role.description = data.role.description
+      role.organizationID = data.role.organizationID
+      role.permissions = data.role.permissions
+      role.persist(user, function (err, role_doc) {
+        if (!err && role_doc) {
+          res.send({code: '00', message: 'success', data: role_doc})
+        } else {
+          res.send({code: '06', message: '#role.create.failed'})
         }
-        //-------------------------------------------//
-        Role.findOne({name: data.role.name, override:'YES'}, function(err, role){
-            if(!err && role){
-                res.send({code:'06', message: '#role.create.name.exist'});
-                return;
-            }
-            var role                =   new Role();
-            role.name               =   data.role.name;
-            role.description        =   data.role.description;
-            role.organizationID     =   org.organisationName;
-            var permissions         =   data.role.permissions;
-            if(permissions && permissions.length){
-                for(var i=0; i<permissions.length; i++){
-                    role.permissions.push(permissions[i]);
-                }
-            }
-            role.persist(user, function(err, role){
-                if(!err && role){
-                    res.send({code:'00', message: 'success', data:role});
-                }else{
-                    res.send({code:'06', message: '#role.create.failed'});
-                }
-            });
-        });
-    });
-});
-router.post('/list_all', function(req, res) {
-    var session =   req.body.session;
-    if(session && session.organizationID){
-        Org.findOne({organisationName: session.organizationID}, function(err, org){
-            if(!err && org){
-                Role.find({}, function(err, result){
-                    res.send({code:'00', message: 'success', data: result});
-                });
-            }else{
-                res.send({code:'06', message: '#role.list_all.refused'});
-            }
-        });
-    }else{
-        res.send({code:'06', message: '#role.list_all.refused'});
-    }
-});
-router.post('/list_by_id', function(req, res) {
-    var session =   req.body.session;
-    var data = req.body;
-    if(session && session.organizationID){
-        Org.findOne({organisationName: session.organizationID}, function(err, org){
-            if(!err && org){
-                var roleResult = [];
-                Role.find({_id:{$in:data.roles}}, function(err, result){
-                    if(!err && result){
-                        async.forEachOf(result, function (role, i, sb){
-                                roleResult.push(role.name);
-                                sb();
-                            },
-                            function close() {
-                                res.send({code: '00', message: 'success',data: roleResult});
-                            });
-                    }else {
-                        res.send({code:'06', message: '#role.list_by_id.ntf'});
-                    }
-                });
-            }else{
-                res.send({code:'06', message: '#role.list_all.refused'});
-            }
-        });
-    }else{
-        res.send({code:'06', message: '#role.list_all.refused'});
-    }
-});
-router.post('/list_org', function(req, res) {
-    var session =   req.body.session;
-    if(session && session.organizationID) {
-        Org.findOne({organisationName: session.organizationID}, function (err, org) {
-            if(!err && org){
-                Role.find({organizationID: org.organisationName}, function(err, result){
-                    res.send({code:'00', message: 'success', data: result});
-                });
-            }else{
-                res.send({code:'06', message: '#role.list.org.required'});
-            }
-        });
-    }else{
-        res.send({code:'06', message: '#role.list_org.refused'});
-    }
-});
-router.post('/edit', function(req, res) {
-    var data        =   req.body;
-    var user        =   data.user;
-    var org         =   data.role.organizationID;  //org id
-    var role        =   data.role._id;            //role id
-    var permissions =   data.role.permissions;      //array of permission
-    /*
-        {
-            "organizationID":"SYSTEM",
-            "role":"5649affa85ca90012d7a90fb",
-            "permissions":["5649aff985ca90012d7a90dd", "5649aff985ca90012d7a90e3"]
+      })
+    })
+  })
+})
+router.post('/list_all', function (req, res) {
+  const session = req.body.session
+  const query = req.body.query || {}
+  if (session && session.organizationID) {
+    Org.findOne({organisationName: session.organizationID}, function (err, org) {
+      if (!err && org) {
+        Role.find(query, function (err, result) {
+          res.send({code: '00', message: 'success', data: result})
+        })
+      } else {
+        res.send({code: '06', message: '#role.list_all.refused'})
+      }
+    })
+  } else {
+    res.send({code: '06', message: '#role.list_all.refused'})
+  }
+})
+router.post('/list_by_id', function (req, res) {
+  const session = req.body.session
+  const data = req.body
+  if (session && session.organizationID) {
+    Org.findOne({organisationName: session.organizationID}, function (err, org) {
+      if (!err && org) {
+        Role.find({_id: {$in: data.roles}}, function (err, result) {
+          if (!err && result) {
+            res.send({code: '00', message: 'success', data: result})
+          } else {
+            res.send({code: '06', message: '#role.list_by_id.ntf'})
+          }
+        })
+      } else {
+        res.send({code: '06', message: '#role.list_all.refused'})
+      }
+    })
+  } else {
+    res.send({code: '06', message: '#role.list_all.refused'})
+  }
+})
+router.post('/list_org', function (req, res) {
+  const session = req.body.session
+  if (session && session.organizationID) {
+    Org.findOne({organisationName: session.organizationID}, function (err, org) {
+      if (!err && org) {
+        Role.find({organizationID: org.organisationName}, function (err, result) {
+          res.send({code: '00', message: 'success', data: result})
+        })
+      } else {
+        res.send({code: '06', message: '#role.list.org.required'})
+      }
+    })
+  } else {
+    res.send({code: '06', message: '#role.list_org.refused'})
+  }
+})
+router.post('/edit', function (req, res) {
+  const data = req.body
+  const user = data.user
+  const org = data.role.organizationID
+  const role = data.role._id
+  Role.findOne({_id: role, organizationID: org}, function (err, doc) {
+    if (!err && doc) {
+      doc.name = data.role.name
+      doc.description = data.role.description
+      doc.permissions = data.role.permissions
+      doc.persist(user, function (err, result) {
+        if (err) {
+          logger.fatal(err)
+          res.send({code: '06', message: '#role.update.failed'})
+        } else {
+          res.send({code: '00', message: 'success', data: result})
         }
-     */
-    Role.findOne({_id: role, organizationID: org}, function(err, doc){
-        if(!err && doc){
-            doc.permissions =   [];
-            if(permissions){
-                for(var i=0; i<permissions.length; i++){
-                    doc.permissions.push(permissions[i]);
-                }
-            }
-            doc.persist(user, function(err, result){
-                if(err){
-                    res.send({code:'06', message: '#role.update.failed'});
-                }else{
-                    res.send({code:'00', message: 'success', data: result});
-                }
-            });
-        }else{
-            res.send({code:'06', message: '#role.update.invalid'});
-        }
-    });
-});
-router.post('/getUsers', function(req, res) {
-    var session =   req.body.session;
-    var data    =   req.body;
-    if(session && session.organizationID){
-        Org.findOne({organisationName: session.organizationID, system:'YES'}, function(err, org){
-            if(!err && org){
-                Role.findOne({name:data.name,organizationID:session.organizationID}, function(err, result){
-                    if(!err && result){
-                        User.find({roles:{$in:[result._id]}}, function (error, users) {
-                            if(!error && users){
-                                res.send({code:'00', message: 'success', data: users});
-                            }else {
-                                res.send({code:'06', message: 'role.'+data.name+'.users.ntf', data: error});
-                            }
-                        })
-                    }else {
-                        res.send({code:'06', message: 'role.'+data.name+'.ntf', data: err});
-                    }
-                });
-            }else{
-                res.send({code:'06', message: '#role.getUsers.refused'});
-            }
-        });
-    }else{
-        res.send({code:'06', message: '#role.list_all.refused'});
+      })
+    } else {
+      res.send({code: '06', message: '#role.update.invalid'})
     }
-});
+  })
+})
 
-handler.use('/role', router);
-module.exports = handler;
+handler.use('/role', router)
+module.exports = handler

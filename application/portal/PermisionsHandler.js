@@ -1,44 +1,74 @@
+const express = require('express');
+const router = express.Router();
+const handler = express();
+const Permission = require('../../model/Permission-model');
 
-var express         =   require('express');
-var log4js          =   require('log4js');
-var router          =   express.Router();
-var Permission      =   require('../../model/Permission-model');
-var Role            =   require('../../model/Role-model');
+router.post('/create', function (req, res) {
+    const data = req.body
+    const user = data.user
+    Permission.findOne({code: data.permission.code, override: 'YES'}, function (err, permission) {
+        if (!err && permission) {
+            res.send({code: '06', message: '#permission.create.code.exist'});
+            return;
+        }
+        permission = new Permission();
+        permission.code = data.permission.code;
+        permission.category = data.permission.category;
+        permission.type = data.permission.type;
+        permission.menu = data.permission.menu;
+        permission.channel = data.channel;
+        permission.persist(user, function (err, permission_doc) {
+            if (!err && permission_doc) {
+                res.send({code: '00', message: 'success', data: permission_doc});
+            } else {
+                res.send({code: '06', message: '#permission.create.failed'});
+            }
+        });
+    });
+});
+router.post('/list_all', function (req, res) {
+    const query = req.body.query || {};
+    Permission.find(query, function (err, result) {
+        if (!err) {
+            res.send({code: '00', message: 'success', data: result});
+        } else {
+            res.send({code: '06', message: '#permission.list_all.refused'});
+        }
+    });
 
-var logger          =   log4js.getLogger('PemissionHandler');
+});
+router.post('/list_by_id', function (req, res) {
+    const data = req.body;
+    Permission.find({_id: {$in: data.permissions}}, function (err, result) {
+        if (!err && result) {
+            res.send({code: '00', message: 'success', data: result});
+        } else {
+            res.send({code: '06', message: '#permission.list_by_id.ntf'});
+        }
+    });
+});
+router.post('/edit', function (req, res) {
+    const data = req.body;
+    const user = data.user;
+    const permission = data.permission._id;
+    Permission.findOne({_id: permission}, function (err, doc) {
+        if (!err && doc) {
+            doc.category = data.permission.category;
+            doc.type = data.permission.type;
+            doc.menu = data.permission.menu;
+            doc.channel = data.channel;
+            doc.persist(user, function (err, result) {
+                if (err) {
+                    res.send({code: '06', message: '#permission.update.failed'});
+                } else {
+                    res.send({code: '00', message: 'success', data: result});
+                }
+            });
+        } else {
+            res.send({code: '06', message: '#permission.update.invalid'});
+        }
+    });
+});
 
-router.post('/permission/list_all', function(req, res) {
-    Permission.find({}, function(err, result){
-        res.send({code:'00', message: 'success', data: result});
-    });
-});
-router.post('/permission/list_org', function(req, res) {
-    Permission.find({system: { $ne: 'YES' }}, function(err, result){
-        res.send({code:'00', message: 'success', data: result});
-    });
-});
-router.post('/permission/list_channel', function(req, res) {
-    var channel =   req.channel_name;
-    Permission.find({channel:channel}, function(err, result){
-        res.send({code:'00', message: 'success', data: result});
-    });
-});
-router.post('/permission/list_channel_org', function(req, res) {
-    var channel =   req.channel_name;
-    Permission.find({channel:channel, system: { $ne: 'YES' }}, function(err, result){
-        res.send({code:'00', message: 'success', data: result});
-    });
-});
-//proxy.post('/permission/updatePermission', function(req, res){
-//var data        =   req.body;
-//
-//Permission.find({system: {$ne: 'YES'}},function(err, result){
-//if(err){
-//res.send({code:'06', message:'error', data: err.message});
-//}else{
-//res.send({code:'00', message:'success', data: result});
-//console.log(data.user.roles);
-//}
-//});
-//});
-module.exports = router;
+handler.use('/permission', router);
+module.exports = handler;

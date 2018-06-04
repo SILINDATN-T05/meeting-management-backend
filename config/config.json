@@ -3,7 +3,7 @@
       "url_token":"http://localhost:9195/api/Token/",
       "url":"http://localhost:9195/api/server/core/transaction/",
       "database": {
-        "connectionString": "mongodb://silindatn:Happinessis@me15@ds012345.mlab.com:56789/MEETING-MANAGEMENT",
+        "connectionString": "mongodb://silindatn:Happinessis#me15@ds147390.mlab.com:47390/meeting-management",
         "certLocation": "./meeting-management-backend/config/ssl/mongodb-db1-cert.crt",
         "user": "root",
         "password": "serverdbpassword",
