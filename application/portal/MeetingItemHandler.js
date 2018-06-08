@@ -159,7 +159,7 @@ router.post('/process_user', bodyParser, function(req, res) {
             },
             function doPassword(payload, next) {
                 var password = randomize('A', 1)+randomize('a', 4)+ randomize('0', 2)+'!';
-                data['successText'] ='Welcome Parts Portal. Your Password is '+password+', please change immediatley.If you did not make this request,contact Autoboys at +2710 600 7900.';
+                data['successText'] ='Welcome Parts Portal. Your Password is '+password+', please change immediatley.If you did not make this request,contact Silinda Co. at +27798308985.';
                 next(null, password , payload);
             },
             function doSecurity(password, payload, next) {
