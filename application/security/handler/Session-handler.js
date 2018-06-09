@@ -54,7 +54,17 @@ module.exports = function (req, res) {
     },
     function doChannel (languages, org, next) {
       query['code'] = applicationCode
-      next(null, 'ACTIVE', languages, org)
+      if (channel === 'APP' && deviceId) {
+        helper.locateDeviceId(deviceId, function (err, deviceUser) {
+          if (!err && deviceUser) {
+            next(null, 'ACTIVE', languages, org)
+          } else {
+            next(null, 'INACTIVE', languages, org)
+          }
+        })
+      } else {
+        next(null, 'ACTIVE', languages, org)
+      }
     },
     function doApplication (status, languages, org, next) {
       Application.findOne(query, function (err, application) {
@@ -68,7 +78,7 @@ module.exports = function (req, res) {
     function doCreateSession (status, application, languages, org, next) {
       helper.createSession(channel, org, deviceId, application, function (err, token) {
         if (!err && token) {
-          next(null, {code: '00', message: 'success', token: token, status: status, languages: languages })
+          next(null, {code: '00', message: 'success', token: token, status: status, languages: languages})
         } else {
           next(err)
         }

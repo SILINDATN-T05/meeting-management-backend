@@ -1,36 +1,38 @@
-var express                 =   require('express');
-var userManagement          =   require('./portal/UserManagementHandler');
-var orgHandler              =   require('./portal/OrganisationHandler');
-var applicationsHandler     =   require('./portal/ApplicationsHandler');
-var languageHandler         =   require('./portal/LanguageHandler');
-var authHandler             =   require('./portal/AuthHandler');
-var meeting                 =   require('./portal/MeetingHandler');
-var meetingItem             =   require('./portal/MeetingItemHandler');
-var attachmentHandler       =   require('./portal/AttachmentHandler');
-var meetingType             =   require('./portal/MeetingTypeHandler');
-var permissionHandler       =   require('./portal/PermisionsHandler');
-var roleHandler             =   require('./portal/RoleHandler');
-var transactionHandler      =   require('./portal/TransactionHandler');
-var messageHandler          =   require('./portal/MessagesHandler');
-var deviceHandler           =   require('./portal/DeviceHandler');
-var securityMiddleware      =   require('./security/SecurityMiddleware');
-var securityCore            =   express();
+var express = require('express')
+var userManagement = require('./portal/UserManagementHandler')
+var orgHandler = require('./portal/OrganisationHandler')
+var applicationsHandler = require('./portal/ApplicationsHandler')
+var languageHandler = require('./portal/LanguageHandler')
+var authHandler = require('./portal/AuthHandler')
+var meeting = require('./portal/MeetingHandler')
+var meetingItem = require('./portal/MeetingItemHandler')
+var meetingType = require('./portal/MeetingTypeHandler')
+var permissionHandler = require('./portal/PermisionsHandler')
+var roleHandler = require('./portal/RoleHandler')
+var transactionHandler = require('./portal/TransactionHandler')
+var messageHandler = require('./portal/MessagesHandler')
+var deviceHandler = require('./portal/DeviceHandler')
+let branchHandler = require('./portal/BranchHandler')
+let securityMiddleware = require('./security/SecurityMiddleware')
+let countHandler = require('./portal/CountHandler')
+let securityCore = express()
 
-securityCore.use('/', authHandler);
-securityCore.use('/', userManagement);
-securityCore.use('/', orgHandler);
-securityCore.use('/', applicationsHandler);
-securityCore.use('/', attachmentHandler);
-securityCore.use('/', permissionHandler);
-securityCore.use('/', meeting);
-securityCore.use('/', meetingItem);
-securityCore.use('/', meetingType);
-securityCore.use('/', languageHandler);
-securityCore.use('/', roleHandler);
-securityCore.use('/', transactionHandler);
-securityCore.use('/', messageHandler);
-securityCore.use('/', deviceHandler);
+securityCore.use('/', userManagement)
+securityCore.use('/', countHandler)
+securityCore.use('/', applicationsHandler)
+securityCore.use('/', branchHandler)
+securityCore.use('/', permissionHandler)
+securityCore.use('/', authHandler)
+securityCore.use('/', orgHandler)
+securityCore.use('/', meeting)
+securityCore.use('/', meetingItem)
+securityCore.use('/', meetingType)
+securityCore.use('/', languageHandler)
+securityCore.use('/', roleHandler)
+securityCore.use('/', transactionHandler)
+securityCore.use('/', messageHandler)
+securityCore.use('/', deviceHandler)
 securityCore.on('mount', function (parent) {
-    securityMiddleware.bind(securityCore, parent.get('TRANS_MANAGER'));
-});
-module.exports = securityCore;
+  securityMiddleware.bind(securityCore, parent.get('TRANS_MANAGER'))
+})
+module.exports = securityCore

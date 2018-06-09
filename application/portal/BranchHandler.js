@@ -31,7 +31,11 @@ router.post('/branch/create', function (req, res) {
 router.post('/branch/list_all', function (req, res) {
   let query = req.body.query || {}
   Branch.find(query, function (err, result) {
-    res.send({code: '00', message: 'success', data: result})
+    if (!err) {
+      res.send({code: '00', message: 'success', data: result})
+    } else {
+      res.send({code: '06', message: err.message || err})
+    }
   })
 })
 router.post('/branch/list_by_id', function (req, res) {
