@@ -1,14 +1,14 @@
 var http = require('http')
 var util = require('util')
 var log4js = require('log4js')
-// var config = require('./engine/Config')
+var config = require('./engine/Config')
 var serverContext = require('./serverContext')
 var logger = log4js.getLogger('SERVER_CORE')
 
 /**
  * Get port from environment and store in Express.
  */
-var port = process.env.PORT // 2. Using process.env.PORT
+var port = process.env.PORT || config.server.port || 8080 // 2. Using process.env.PORT
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
 serverContext.set('port', port)
